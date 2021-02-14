@@ -28,19 +28,32 @@ const register = async(req, res)=> {
          });
       }
 
-      const passwordHash = await bcrypt.hash(password, 12);
+      const emailExists = await Users.findOne({ email });
 
-      const newUser = new Users({ 
-         name, 
-         email, 
-         password: passwordHash, 
-         cf_password 
-      });
+      if(emailExists){
+         return res.status(400).json({
+            err: 'Email already Exists on the server'
+         });
+      }else{
+         
+         const passwordHash = await bcrypt.hash(password, 12);
+   
+         const newUser = new Users({ 
+            name, 
+            email, 
+            password: passwordHash, 
+            cf_password 
+         });
+   
+         await newUser.save();
+   
+         console.log(newUser);
+         res.json({
+            msg: 'Register Success!'
+         });
+         
+      }
 
-      console.log(newUser);
-      res.json({
-         msg: 'Register Success!'
-      });
    }catch(err){
       return res.status(500).json({
          err: err.message

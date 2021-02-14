@@ -3,6 +3,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import valid from '../utils/valid.js'; 
 import { DataContext } from '../store/GlobalState.js';
+import { postData } from '../utils/fetchData.js';
 
 const Register = () => {
 
@@ -10,7 +11,7 @@ const Register = () => {
       name: '', email: '',
       password: '', cf_password: ''
    }
-   const [state, dispatch] = useContext(DataContext);
+   const { state, dispatch } = useContext(DataContext);
    const [userData, setUserData] = useState(initialState);
    const { name, email, password, cf_password } = userData;
    
@@ -19,7 +20,7 @@ const Register = () => {
       setUserData({...userData, [name]: value});
    }
 
-   const handleSubmit = (e)=>{
+   const handleSubmit = async(e)=>{
       e.preventDefault();
       const errMsg = valid(name, email, password, cf_password);
       if(errMsg){
@@ -30,7 +31,14 @@ const Register = () => {
             }
          });
       }
-      dispatch({ type: 'NOTIFY', payload: { success: 'Ok' }});
+      dispatch({ type: 'NOTIFY', payload: { loading: true }});
+      const res = await postData('auth/register', userData)
+      
+      if(res.err){
+         return  dispatch({ type: 'NOTIFY', payload: { error: res.err }});
+      }else{
+         return  dispatch({ type: 'NOTIFY', payload: { success: res.msg }});
+      }
    }
 
    return (  
