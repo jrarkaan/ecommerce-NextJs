@@ -12,7 +12,7 @@ const mongooseOptions = {
 mongoose.Promise = Promise;
 const connectDB = async()=>{
    try{
-      const conn = await mongoose.connect(process.env.MONGO_LOCAL, mongooseOptions);
+      const conn = await mongoose.connect(process.env.MONGODB_URL, mongooseOptions);
       console.log(`MongoDB connected: ${conn.connection.host}:27017`.cyan.underline.bold);
    }catch(err){
       console.log(`Error: ${err.message}`.red.underline.bold);
