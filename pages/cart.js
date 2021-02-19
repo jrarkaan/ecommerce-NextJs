@@ -1,14 +1,48 @@
 import Head from 'next/head';
-import React, { useContext } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { DataContext } from '../store/GlobalState.js';
 import CartItem from '../components/CartItem.js';
 import Link from 'next/link';
+import { getData } from '../utils/fetchData.js';
 
 const Cart = () => {
    const { state, dispatch } = useContext(DataContext);
    const { cart, auth } = state;
+   const [total, setTotal] = useState(0);
+
+   useEffect(()=>{
+      const res = cart.reduce((prev, item)=>{
+         return prev + (item.price * item.quantity)
+      }, 0);
+
+      setTotal(res);
+   }, [cart]);
+
+   useEffect(()=>{
+      const cartLocal = JSON.parse(localStorage.getItem('__next__cart01__'));
+      if(cartLocal && cartLocal.length > 0){
+         let newArr = [];
+         const updateCart = async()=>{
+            for (const item of cartLocal){
+               const res = await getData(`product/${item._id}`);
+
+               const { _id, title, images, price, inStock, sold } = res.product;
+               if(inStock > 0){
+                  newArr.push({ _id, title, images,
+                      price, inStock, sold, quantity: item.quantity > inStock ? 1 : item.quantity 
+                  });
+               }
+            }
+
+            dispatch({ type: 'ADD_CART', payload: newArr });
+         }
+
+         updateCart();
+      }
+   }, []);
 
    if(cart.length === 0) return <h2>Not empty!</h2>
+   
    return (  
       <div className="row mx-auto">
          <Head>
@@ -49,7 +83,7 @@ const Cart = () => {
                />
             </form>
 
-            <h3>Total : <span className="text-info" >0</span></h3>
+            <h3>Total : <span className="text-info" >${total}</span></h3>
 
             <Link href={auth.user ? "#" : '/signin'} >
                <a className="btn btn-dark my-2">Proceed with Payment</a>
