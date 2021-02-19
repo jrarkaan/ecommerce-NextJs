@@ -1,19 +1,60 @@
 import Head from 'next/head';
 import React, { useContext } from 'react';
 import { DataContext } from '../store/GlobalState.js';
+import CartItem from '../components/CartItem.js';
+import Link from 'next/link';
 
 const Cart = () => {
    const { state, dispatch } = useContext(DataContext);
-   const { cart } = state;
+   const { cart, auth } = state;
 
    if(cart.length === 0) return <h2>Not empty!</h2>
    return (  
-      <div>
+      <div className="row mx-auto">
          <Head>
             <title>Cart Page</title>
          </Head>
 
-         <h1>Cart</h1>
+         <div className="col-md-8 text-secondary table-responsive my-3">
+            <h2 className="text-uppercase">Shopping Cart</h2>
+
+            <table className="table my-3">
+               <tbody>
+                  {
+                     cart.map(item=>(
+                        <CartItem key={item._id} item={item} dispatch={dispatch} cart={cart} />
+                     ))
+                  }
+               </tbody>
+            </table>
+
+         </div>
+
+         <div className="col-md-4 my-3 text-right text-uppercase">
+            <form>
+               <h2>Shipping</h2>
+               <label htmlFor="address">Address</label>
+               <input 
+                  type="text"
+                  name="address"
+                  id="address"
+                  className="form-control mb-2"
+               />
+               <label htmlFor="address">Mobile</label>
+               <input 
+                  type="text"
+                  name="mobile"
+                  id="mobile"
+                  className="form-control mb-2"
+               />
+            </form>
+
+            <h3>Total : <span className="text-info" >0</span></h3>
+
+            <Link href={auth.user ? "#" : '/signin'} >
+               <a className="btn btn-dark my-2">Proceed with Payment</a>
+            </Link>
+         </div>
       </div>
    );
 }
