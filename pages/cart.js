@@ -4,12 +4,16 @@ import { DataContext } from '../store/GlobalState.js';
 import CartItem from '../components/CartItem.js';
 import Link from 'next/link';
 import { getData } from '../utils/fetchData.js';
+import PaypalBtn from './paypalBtn.js';
 
 const Cart = () => {
    const { state, dispatch } = useContext(DataContext);
    const { cart, auth } = state;
    const [total, setTotal] = useState(0);
-
+   const [address, setAddress] = useState('');
+   const [mobile, setMobile] = useState('');
+   const [payment, setPayment] = useState(false);
+   console.log('cart', cart)
    useEffect(()=>{
       const res = cart.reduce((prev, item)=>{
          return prev + (item.price * item.quantity)
@@ -28,7 +32,7 @@ const Cart = () => {
 
                const { _id, title, images, price, inStock, sold } = res.product;
                if(inStock > 0){
-                  newArr.push({ _id, title, images,
+                  newArr.push({ _id, title, images, sold,
                       price, inStock, sold, quantity: item.quantity > inStock ? 1 : item.quantity 
                   });
                }
@@ -43,6 +47,14 @@ const Cart = () => {
 
    if(cart.length === 0) return <h2>Not empty!</h2>
    
+   const handlePayment = ()=>{
+      if(!address || !mobile){
+         return dispatch({ type: 'NOTIFY', payload: { error: 'Please add your Address and Mobile.' } })
+      }else{
+         setPayment(true)
+      }
+   }
+
    return (  
       <div className="row mx-auto">
          <Head>
@@ -73,6 +85,8 @@ const Cart = () => {
                   name="address"
                   id="address"
                   className="form-control mb-2"
+                  value={address}
+                  onChange={(e)=>setAddress(e.target.value)}
                />
                <label htmlFor="address">Mobile</label>
                <input 
@@ -80,14 +94,28 @@ const Cart = () => {
                   name="mobile"
                   id="mobile"
                   className="form-control mb-2"
+                  value={mobile}
+                  onChange={(e)=>setMobile(e.target.value)}
                />
             </form>
 
             <h3>Total : <span className="text-info" >${total}</span></h3>
-
-            <Link href={auth.user ? "#" : '/signin'} >
-               <a className="btn btn-dark my-2">Proceed with Payment</a>
-            </Link>
+            
+            {
+               payment ? (
+                  <PaypalBtn 
+                     total={total}
+                     address={address}
+                     mobile={mobile}
+                     state={state}
+                     dispatch={dispatch}
+                  />
+               ) : (
+                  <Link href={auth.user ? "#!" : '/signin'} >
+                     <a className="btn btn-dark my-2" onClick={handlePayment}>Proceed with Payment</a>
+                  </Link>
+               )
+            }
          </div>
       </div>
    );
