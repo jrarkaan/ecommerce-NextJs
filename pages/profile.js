@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import Head from 'next/head';
 import { DataContext } from '../store/GlobalState.js';
 import { patchData } from '../utils/fetchData.js';
+import { imageUpload } from '../utils/ImageUpload.js';
 
 import valid from '../utils/valid.js';
 
@@ -38,6 +39,8 @@ const Profile = () => {
          if(errMsg) return dispatch({ type: 'NOTIFY', payload: { error: errMsg } });
          updatePassword();
       }
+
+      if(name !== auth.user.name || avatar) updateInfor()
    }
 
    const updatePassword = ()=>{
@@ -47,6 +50,28 @@ const Profile = () => {
             if(res.err) return dispatch({ type: 'NOTIFY', payload: { error: res.msg } });
             return dispatch({ type: 'NOTIFY', payload: { success: res.msg } });
          })
+   }
+
+   const changeAvatar = (e)=>{
+      console.log(e.target.files)
+      const file = e.target.files[0];
+      if(!file) return dispatch({ type: 'NOTIFY', payload: { error: 'File doesnt exist' } });
+
+      if(file.size > 1024 * 1024) return dispatch({ type: 'NOTIFY', payload: { error: 'The Largest image size is 1 MB' } });
+
+      if(file.type !== "image/jpeg" && file.type !== "image/png") return dispatch({ type: 'NOTIFY', payload: { error: 'Image format is incorrect! ' } });
+
+      setData({ ...data, avatar: file });
+
+   }
+
+   const updateInfor = async()=>{
+      let media;
+      dispatch({ type:"NOTIFY", payload: { loading: true } });
+
+      if(avatar) media = await imageUpload([avatar]);
+
+      console.log(media);
    }
 
    if(!auth.user) return null;
@@ -64,11 +89,17 @@ const Profile = () => {
                </h3>
 
                <div className="avatar">
-                  <img src={auth.user.avatar} alt={auth.user.avatar}/>
+                  <img src={avatar ? URL.createObjectURL(avatar) : auth.user.avatar} alt="avatar"/>
                   <span>
                      <i className="fas fa-camera"></i>
                      <p>Change</p>
-                     <input type="file" name="file" id="file_up" />
+                     <input 
+                        accept="image/*"
+                        type="file" 
+                        name="file" 
+                        id="file_up"
+                        onChange={changeAvatar} 
+                     />
                   </span>
                </div>
 
