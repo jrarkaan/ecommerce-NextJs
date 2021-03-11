@@ -17,7 +17,10 @@ const Register = () => {
    
    const handleChangeInput = (e)=>{
       const { name, value } = e.target;
+      console.log(name)
+      console.log(name);
       setUserData({...userData, [name]: value});
+      console.log('data')
    }
 
    const handleSubmit = async(e)=>{

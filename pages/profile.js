@@ -1,4 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
+import Link from 'next/link';
 import Head from 'next/head';
 import { DataContext } from '../store/GlobalState.js';
 import { patchData } from '../utils/fetchData.js';
@@ -18,7 +19,9 @@ const Profile = () => {
    const { avatar, name, password, cf_password } = data;
 
    const { state, dispatch } = useContext(DataContext);
-   const { auth, notify } = state;
+   const { auth, notify, orders } = state;
+
+   console.log('orders', orders);
 
    useEffect(()=>{
 
@@ -71,7 +74,20 @@ const Profile = () => {
 
       if(avatar) media = await imageUpload([avatar]);
 
-      console.log(media);
+      patchData('user', {
+         name, avatar : avatar ? media[0].url : auth.user.avatar
+      }, auth.token).then((res)=>{
+
+         if(res.err) return dispatch({ type:"NOTIFY", payload: { error: res.err } });
+         dispatch({
+            type: "AUTH",
+            payload: {
+               token: auth.token,
+               user: res.user
+            }
+         });
+         return dispatch({ type:"NOTIFY", payload: { success: res.msg } });
+      });
    }
 
    if(!auth.user) return null;
@@ -159,7 +175,47 @@ const Profile = () => {
 
 
             <div className="col-md-8">
-               <h3>Orders</h3>
+               <h3 className="text-uppercase">Orders</h3>
+               <div className="my-3">
+                  <table 
+                     className="table-bordered table-hover w-100 text-uppercase" 
+                     style={{ minWidth: "600px", cursor: 'pointer' }}
+                  >
+                     <thead className="bg-light font-weight-bold">
+                        <tr>
+                           <td className="p-2" >id</td>
+                           <td className="p-2" >date</td>
+                           <td className="p-2" >total</td>
+                           <td className="p-2" >delivered</td>
+                           <td className="p-2" >actions</td>
+                        </tr>
+                     </thead>
+
+                     <tbody>
+                        {
+                           orders.map((order)=> (
+                              <tr>
+                                 <td className="p-2" >{order._id}</td>
+                                 <td className="p-2" >{new Date(order.createdAt).toLocaleDateString()}</td>
+                                 <td className="p-2" >${order.total}</td>
+                                 <td className="p-2" >
+                                    {
+                                       order.delivered 
+                                          ? <i className="fas fa-check text-success"></i>
+                                          : <i className="fas fa-times text-danger"></i>
+                                    }
+                                 </td>
+                                 <td className="p-2" >
+                                    <Link href={`/order/${order._id}`}>
+                                       <a>details</a>
+                                    </Link>
+                                 </td>
+                              </tr>
+                           ))
+                        }
+                     </tbody>
+                  </table>
+               </div>
             </div>
          </section>
       </div>

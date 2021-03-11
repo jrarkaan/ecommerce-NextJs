@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { postData } from '../utils/fetchData.js';
 
 const  paypalBtn= ({ address, mobile, total, state, dispatch }) => {
-  const { auth, cart } = state;
+  const { auth, cart, orders } = state;
    const refPaypalBtn = useRef();
 
    useEffect(() => {
@@ -26,6 +26,7 @@ const  paypalBtn= ({ address, mobile, total, state, dispatch }) => {
                 .then(res => {
                     if(res.err) return dispatch({ type: "NOTIFY", payload: { error: res.err } });
                     dispatch({ type: "ADD_CART", payload: [] });
+                    dispatch({ type: "ADD_ORDERS", payload: [...orders, res.newOrder] });
                     return dispatch({ type: "ADD_CART", payload: { success: res.msg } })
                   })
              // This function shows a transaction success message to your buyer.

@@ -14,6 +14,7 @@ const Cart = () => {
    const [mobile, setMobile] = useState('');
    const [payment, setPayment] = useState(false);
    console.log('cart', cart)
+   
    useEffect(()=>{
       const res = cart.reduce((prev, item)=>{
          return prev + (item.price * item.quantity)
@@ -45,7 +46,9 @@ const Cart = () => {
       }
    }, []);
 
-   if(cart.length === 0) return <h2>Not empty!</h2>
+   if(cart.length === 0) return (
+      <img className="img-responsive w-100" src="/empty_cart.jpg" alt="not empty"/> 
+   )
    
    const handlePayment = ()=>{
       if(!address || !mobile){
